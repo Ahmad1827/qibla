@@ -5,6 +5,7 @@ class AppStrings {
     AppLanguage.arabic: {
       'app_title': 'القبلة ومواقيت الصلاة',
       'quran': 'القرآن الكريم',
+      'learn': 'تعلّم',
       'surahs': 'السور',
       'verses': 'آيات',
       'fajr': 'الفجر',
@@ -27,6 +28,7 @@ class AppStrings {
     AppLanguage.english: {
       'app_title': 'Qibla & Prayer Times',
       'quran': 'Holy Quran',
+      'learn': 'Learn',
       'surahs': 'Surahs',
       'verses': 'Verses',
       'fajr': 'Fajr',

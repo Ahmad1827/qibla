@@ -1,30 +1,56 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:qibla/main.dart';
+import 'package:qibla/learn/alphabet_round.dart';
+import 'package:qibla/learn/course_round.dart';
+import 'package:qibla/learn/lessons.dart';
+import 'package:qibla/learn/letters.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('every trainer letter has a name, a sound and a word to find it in', () {
+    for (final letter in trainerLetters) {
+      expect(letterInfo.containsKey(letter), isTrue, reason: letter);
+      expect(wordsWith(letter), isNotEmpty, reason: letter);
+    }
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('letters without a recording are spoken instead', () {
+    for (final letter in trainerLetters) {
+      expect(letterAudio.containsKey(letter) || letterSpoken.containsKey(letter), isTrue, reason: letter);
+    }
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('the next letter group opens once the earlier ones are answered twice', () {
+    expect(unlockedGroups({}), 1);
+    final first = {for (final l in alphabetGroups[0].letters) l: unlockAt};
+    expect(unlockedGroups(first), 2);
+    expect(unlockedGroups({...first, alphabetGroups[0].letters.first: 1}), 1);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('letters inside a word keep their joins', () {
+    expect(joinedGlyphs('باب'), ['ب$joiner', '$joinerا', 'ب']);
+    expect(joinedGlyphs('ماء'), ['م$joiner', '$joinerا', 'ء']);
+    expect(joinedGlyphs('باب').map((g) => g.replaceAll(joiner, '')).join(), 'باب');
+  });
+
+  test('misreadings change only the vowels', () {
+    final wrong = misreadings('kitāb');
+    expect(wrong, hasLength(3));
+    expect(wrong, isNot(contains('kitāb')));
+    for (final w in wrong) {
+      expect(w.replaceAll(RegExp('[aiuāīū]'), ''), 'ktb');
+    }
+  });
+
+  test('marks are written on the consonant they are shown with', () {
+    final fatha = courses.first.units.first.items.first as MarkItem;
+    expect(fatha.write('ب'), 'بَ');
+    expect(fatha.read('b'), 'ba');
+    expect(stripMarks(fatha.write('ب')), 'ب');
+  });
+
+  test('item ids are unique within each course', () {
+    for (final course in courses) {
+      final ids = [for (final u in course.units) for (final i in u.items) i.id];
+      expect(ids.toSet().length, ids.length, reason: course.id);
+    }
   });
 }

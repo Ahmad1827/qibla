@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'l10n/app_strings.dart';
+import 'learn/learn_screen.dart';
 import 'models/prayer_data.dart';
 import 'screens/quran_index_screen.dart';
 import 'services/location_service.dart';
@@ -155,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                     child: Row(
                       children: [
                         const Icon(Icons.menu_book_rounded, size: 18, color: Color(0xFFE2B970)),
@@ -179,9 +180,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 InkWell(
                   borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LearnScreen()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.school_rounded, size: 18, color: Color(0xFF2DD4BF)),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppStrings.get('learn', widget.language),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF2DD4BF),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 24,
+                  color: const Color(0xFF1E293B),
+                ),
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
                   onTap: widget.onToggleLanguage,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                     child: Row(
                       children: [
                         const Icon(Icons.translate_rounded, size: 18, color: Color(0xFF38BDF8)),
