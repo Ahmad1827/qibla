@@ -3,6 +3,7 @@ import 'alphabet_round.dart' show roundLength;
 import 'letters.dart';
 import 'lessons.dart';
 import 'progress_store.dart';
+import '../theme/app_theme.dart';
 import 'round.dart';
 import 'speech.dart';
 
@@ -116,14 +117,14 @@ class CoursePlan extends RoundPlan {
       wait: Duration(milliseconds: _isPhrase ? 2200 : 1300),
       reveal: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         if (!correct) _arabic(item, size: _isPhrase ? 24 : 36),
-        Text.rich(
+        Soft(Text.rich(
           TextSpan(children: [
             TextSpan(text: _readingOf(item), style: uiStyle(14, weight: FontWeight.w700)),
             TextSpan(text: ' · ${_meaningOf(item)}'),
           ]),
           textAlign: TextAlign.center,
-          style: uiStyle(14, color: Colors.white70),
-        ),
+          style: uiStyle(14),
+        )),
       ]),
     );
   }
@@ -142,7 +143,7 @@ class CoursePlan extends RoundPlan {
           const SizedBox(height: 6),
           Text(_readingOf(item), textAlign: TextAlign.center, style: uiStyle(20, weight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(_meaningOf(item), textAlign: TextAlign.center, style: uiStyle(15, color: LearnColors.muted)),
+          Soft(Text(_meaningOf(item), textAlign: TextAlign.center, style: uiStyle(15))),
           // The same mark on a few other letters.
           if (item is MarkItem) ...[
             const SizedBox(height: 18),
@@ -154,7 +155,7 @@ class CoursePlan extends RoundPlan {
                 for (final (letter, latin) in shuffled(markCarriers.where((m) => m != _carrier)).take(3))
                   Column(mainAxisSize: MainAxisSize.min, children: [
                     Text(item.write(letter), style: arabicStyle(34)),
-                    Text(item.read(latin), style: uiStyle(12, color: LearnColors.faint)),
+                    Soft(Text(item.read(latin), style: uiStyle(12)), faint: true),
                   ]),
               ],
             ),
@@ -397,14 +398,14 @@ class CoursePlan extends RoundPlan {
   }
 
   @override
-  List<Widget> summary(int right, int wrong) {
+  List<Widget> summary(BuildContext context, int right, int wrong) {
     final learned = items.where((i) => _strengthOf(i) >= ProgressStore.knownAt).length;
     return [
       Text('$title: $learned of ${items.length} learned.',
-          textAlign: TextAlign.center, style: uiStyle(15, color: LearnColors.gold)),
+          textAlign: TextAlign.center, style: uiStyle(15, color: context.palette.gold)),
       if (missed.isNotEmpty) ...[
         const SizedBox(height: 16),
-        Text('Worth another look:', textAlign: TextAlign.center, style: uiStyle(14, color: LearnColors.muted)),
+        Text('Worth another look:', textAlign: TextAlign.center, style: uiStyle(14, color: context.palette.muted)),
         const SizedBox(height: 6),
         for (final item in missed)
           Padding(
@@ -415,7 +416,7 @@ class CoursePlan extends RoundPlan {
                 TextSpan(text: '  ${_readingOf(item)}${item is MarkItem ? '' : ' · ${item.meaning}'}'),
               ]),
               textAlign: TextAlign.center,
-              style: uiStyle(13, color: Colors.white70),
+              style: uiStyle(13, color: context.palette.muted),
             ),
           ),
       ],

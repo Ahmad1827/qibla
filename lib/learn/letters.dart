@@ -63,8 +63,10 @@ const List<LetterGroup> alphabetGroups = [
 final List<String> trainerLetters = [for (final g in alphabetGroups) ...g.letters];
 
 // Arabic letters change shape depending on where they sit in a word. A
-// zero-width joiner makes the text engine draw each shape on its own.
-const String joiner = '‍';
+// tatweel (the connecting stroke ـ) on the joining side makes the text engine
+// draw each shape on its own, the way textbooks show them. (A zero-width
+// joiner does the same in browsers, but Flutter draws the isolated letter.)
+const String joiner = 'ـ';
 const Set<String> joinsBackwardOnly = {'ا', 'أ', 'إ', 'آ', 'د', 'ذ', 'ر', 'ز', 'و', 'ؤ', 'ة', 'ى'};
 
 class LetterForm {

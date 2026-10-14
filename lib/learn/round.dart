@@ -3,26 +3,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
 import 'speech.dart';
 
-// Colours shared with the rest of the app.
-class LearnColors {
-  static const background = Color(0xFF0B0F19);
-  static const card = Color(0xFF131B2E);
-  static const border = Color(0xFF1E293B);
-  static const borderStrong = Color(0xFF334155);
-  static const gold = Color(0xFFE2B970);
-  static const blue = Color(0xFF38BDF8);
-  static const muted = Color(0xFF94A3B8);
-  static const faint = Color(0xFF64748B);
-  static const right = Color(0xFF2DD4BF);
-  static const wrong = Color(0xFFF43F5E);
-}
-
-TextStyle arabicStyle(double size, {Color color = Colors.white, double height = 1.6}) =>
+// Colour comes from the surrounding text (the theme's ink) unless given.
+TextStyle arabicStyle(double size, {Color? color, double height = 1.6}) =>
     GoogleFonts.notoNaskhArabic(fontSize: size, color: color, height: height);
 
-TextStyle uiStyle(double size, {Color color = Colors.white, FontWeight weight = FontWeight.w400, double? height}) =>
+TextStyle uiStyle(double size, {Color? color, FontWeight weight = FontWeight.w400, double? height}) =>
     GoogleFonts.plusJakartaSans(fontSize: size, color: color, fontWeight: weight, height: height);
 
 final _random = math.Random();
@@ -77,7 +65,7 @@ abstract class RoundPlan {
   Widget Function(RoundControl) nextCard();
 
   /// Lines shown under the result title when the round is over.
-  List<Widget> summary(int right, int wrong);
+  List<Widget> summary(BuildContext context, int right, int wrong);
 }
 
 class RoundScreen extends StatefulWidget {
@@ -177,12 +165,9 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: LearnColors.background,
         appBar: AppBar(
-          backgroundColor: LearnColors.background,
-          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.close_rounded, color: Colors.white70),
+            icon: Icon(Icons.close_rounded, color: context.palette.muted),
             onPressed: () => Navigator.pop(context),
           ),
           title: _done
@@ -192,8 +177,8 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
                   child: LinearProgressIndicator(
                     value: _plan.asked / _plan.total,
                     minHeight: 8,
-                    backgroundColor: LearnColors.border,
-                    color: LearnColors.gold,
+                    backgroundColor: context.palette.border,
+                    color: context.palette.green,
                   ),
                 ),
           actions: [
@@ -205,7 +190,7 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
                     Icon(
                       Icons.local_fire_department_rounded,
                       size: 18,
-                      color: _run >= 3 ? const Color(0xFFFB923C) : LearnColors.faint,
+                      color: _run >= 3 ? const Color(0xFFFB923C) : context.palette.faint,
                     ),
                     const SizedBox(width: 2),
                     Text('$_run', style: uiStyle(14, weight: FontWeight.w600)),
@@ -225,11 +210,7 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
       children: [
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: LearnColors.card,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: LearnColors.border),
-          ),
+          decoration: panel(context, radius: 20),
           child: KeyedSubtree(key: ValueKey(('card', _cardNumber)), child: _card),
         ),
         if (_feedback != null) ...[
@@ -237,9 +218,9 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: (_lastCorrect! ? LearnColors.right : LearnColors.wrong).withValues(alpha: 0.12),
+              color: (_lastCorrect! ? context.palette.right : context.palette.wrong).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: (_lastCorrect! ? LearnColors.right : LearnColors.wrong).withValues(alpha: 0.5)),
+              border: Border.all(color: (_lastCorrect! ? context.palette.right : context.palette.wrong).withValues(alpha: 0.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,7 +230,7 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
                   style: uiStyle(
                     16,
                     weight: FontWeight.w700,
-                    color: _lastCorrect! ? LearnColors.right : LearnColors.wrong,
+                    color: _lastCorrect! ? context.palette.right : context.palette.wrong,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -269,7 +250,7 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
       padding: const EdgeInsets.all(24),
       children: [
         const SizedBox(height: 24),
-        Icon(_wrong == 0 ? Icons.emoji_events_rounded : Icons.check_circle_rounded, size: 64, color: LearnColors.gold),
+        Icon(_wrong == 0 ? Icons.emoji_events_rounded : Icons.check_circle_rounded, size: 64, color: context.palette.gold),
         const SizedBox(height: 16),
         Text(
           resultTitle(_right, _wrong),
@@ -280,21 +261,21 @@ class _RoundScreenState extends State<RoundScreen> implements RoundControl {
         Text(
           '$_right right · $_wrong wrong',
           textAlign: TextAlign.center,
-          style: uiStyle(14, color: LearnColors.muted),
+          style: uiStyle(14, color: context.palette.muted),
         ),
         const SizedBox(height: 24),
-        ..._plan.summary(_right, _wrong),
+        ..._plan.summary(context, _right, _wrong),
         const SizedBox(height: 24),
         PrimaryButton(label: 'Another round', onPressed: () => setState(_start)),
         const SizedBox(height: 10),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: LearnColors.borderStrong),
+            side: BorderSide(color: context.palette.borderStrong),
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           onPressed: () => Navigator.pop(context),
-          child: Text('Done', style: uiStyle(15, color: Colors.white70)),
+          child: Text('Done', style: uiStyle(15, color: context.palette.muted)),
         ),
       ],
     );
@@ -312,18 +293,32 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilledButton(
       style: FilledButton.styleFrom(
-        backgroundColor: LearnColors.gold,
-        foregroundColor: LearnColors.background,
+        backgroundColor: context.palette.green,
+        foregroundColor: context.palette.onGreen,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       onPressed: onPressed,
       child: Text(
         label,
-        style: uiStyle(15, weight: FontWeight.w700, color: LearnColors.background),
+        style: uiStyle(15, weight: FontWeight.w700, color: context.palette.onGreen),
       ),
     );
   }
+}
+
+/// Secondary text. Question cards are built once, ahead of drawing, so their
+/// quieter colours are picked here, when drawn, from the theme.
+class Soft extends StatelessWidget {
+  final Widget child;
+  final bool faint;
+  const Soft(this.child, {super.key, this.faint = false});
+
+  @override
+  Widget build(BuildContext context) => DefaultTextStyle.merge(
+        style: TextStyle(color: faint ? context.palette.faint : context.palette.muted),
+        child: child,
+      );
 }
 
 class Eyebrow extends StatelessWidget {
@@ -335,7 +330,7 @@ class Eyebrow extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 14),
     child: Text(
       text,
-      style: uiStyle(13, color: LearnColors.muted, weight: FontWeight.w600),
+      style: uiStyle(13, color: context.palette.muted, weight: FontWeight.w600),
     ),
   );
 }
@@ -347,9 +342,9 @@ class ListenButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton.filledTonal(
-    style: IconButton.styleFrom(backgroundColor: LearnColors.blue.withValues(alpha: 0.15)),
+    style: IconButton.styleFrom(backgroundColor: context.palette.blue.withValues(alpha: 0.15)),
     iconSize: size,
-    icon: const Icon(Icons.volume_up_rounded, color: LearnColors.blue),
+    icon: Icon(Icons.volume_up_rounded, color: context.palette.blue),
     onPressed: onPressed,
   );
 }
@@ -445,14 +440,14 @@ class _OptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = state == true
-        ? LearnColors.right
+        ? context.palette.right
         : state == false
-        ? LearnColors.wrong
-        : LearnColors.borderStrong;
+        ? context.palette.wrong
+        : context.palette.borderStrong;
     return Opacity(
       opacity: faded ? 0.45 : 1,
       child: Material(
-        color: state == null ? LearnColors.background : color.withValues(alpha: 0.15),
+        color: state == null ? context.palette.sunk : color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -492,7 +487,7 @@ class TwoLine extends StatelessWidget {
         Text(
           subtitle!,
           textAlign: TextAlign.center,
-          style: uiStyle(11.5, color: LearnColors.muted),
+          style: uiStyle(11.5, color: context.palette.muted),
         ),
     ],
   );
@@ -540,10 +535,10 @@ class _TileBuilderState extends State<TileBuilder> {
     final built = _placed.map((i) => _tiles[i]).join(widget.joinWith);
     final sentence = widget.joinWith.isNotEmpty;
     final frame = _result == null
-        ? LearnColors.borderStrong
+        ? context.palette.borderStrong
         : _result!
-        ? LearnColors.right
-        : LearnColors.wrong;
+        ? context.palette.right
+        : context.palette.wrong;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -554,7 +549,7 @@ class _TileBuilderState extends State<TileBuilder> {
                 constraints: BoxConstraints(minHeight: sentence ? 64 : 80),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: LearnColors.background,
+                  color: context.palette.sunk,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: frame, width: _result == null ? 1 : 2),
                 ),
@@ -565,7 +560,7 @@ class _TileBuilderState extends State<TileBuilder> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.backspace_outlined, color: Colors.white70),
+              icon: Icon(Icons.backspace_outlined, color: context.palette.muted),
               onPressed: _result != null || _placed.isEmpty ? null : () => setState(_placed.removeLast),
             ),
           ],
@@ -582,7 +577,7 @@ class _TileBuilderState extends State<TileBuilder> {
                 Opacity(
                   opacity: _placed.contains(i) ? 0.25 : 1,
                   child: Material(
-                    color: LearnColors.background,
+                    color: context.palette.sunk,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -592,10 +587,14 @@ class _TileBuilderState extends State<TileBuilder> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: LearnColors.borderStrong),
+                          border: Border.all(color: context.palette.borderStrong),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(_tiles[i], style: arabicStyle(sentence ? 22 : 28)),
+                        // Sized to its letter or word, so tiles sit side by side.
+                        child: Center(
+                          widthFactor: 1,
+                          heightFactor: 1,
+                          child: Text(_tiles[i], style: arabicStyle(sentence ? 22 : 28)),
+                        ),
                       ),
                     ),
                   ),
@@ -678,18 +677,18 @@ class _MatchBoardState<T extends Object> extends State<MatchBoard<T>> {
     final selected = isLeft ? _left == item : _right == item;
     final wrong = _wrongPair != null && (isLeft ? _wrongPair!.$1 == item : _wrongPair!.$2 == item);
     final color = matched
-        ? LearnColors.right
+        ? context.palette.right
         : wrong
-        ? LearnColors.wrong
+        ? context.palette.wrong
         : selected
-        ? LearnColors.gold
-        : LearnColors.borderStrong;
+        ? context.palette.gold
+        : context.palette.borderStrong;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Opacity(
         opacity: matched ? 0.5 : 1,
         child: Material(
-          color: matched ? LearnColors.right.withValues(alpha: 0.12) : LearnColors.background,
+          color: matched ? context.palette.right.withValues(alpha: 0.12) : context.palette.sunk,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
@@ -760,9 +759,9 @@ class _GlyphPickerState extends State<GlyphPicker> {
                     color: _tapped == null
                         ? Colors.transparent
                         : widget.isAnswer(i)
-                        ? LearnColors.right.withValues(alpha: 0.2)
+                        ? context.palette.right.withValues(alpha: 0.2)
                         : i == _tapped
-                        ? LearnColors.wrong.withValues(alpha: 0.2)
+                        ? context.palette.wrong.withValues(alpha: 0.2)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -770,7 +769,7 @@ class _GlyphPickerState extends State<GlyphPicker> {
                     widget.glyphs[i],
                     style: arabicStyle(
                       56,
-                      color: _tapped == null || widget.isAnswer(i) || i == _tapped ? Colors.white : Colors.white38,
+                      color: _tapped == null || widget.isAnswer(i) || i == _tapped ? context.palette.ink : context.palette.faint,
                     ),
                   ),
                 ),

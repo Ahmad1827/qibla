@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'letters.dart';
 import 'progress_store.dart';
+import '../theme/app_theme.dart';
 import 'round.dart';
 import 'speech.dart';
 
@@ -33,7 +34,7 @@ class FormsRow extends StatelessWidget {
           for (final form in letterForms(letter))
             Column(mainAxisSize: MainAxisSize.min, children: [
               Text(form.text, style: arabicStyle(34)),
-              Text(form.where, style: uiStyle(11, color: LearnColors.faint)),
+              Text(form.where, style: uiStyle(11, color: context.palette.faint)),
             ]),
         ],
       );
@@ -84,8 +85,8 @@ class AlphabetPlan extends RoundPlan {
       correct,
       wait: const Duration(milliseconds: 1100),
       reveal: Column(children: [
-        Text('${letterName(letter)} · sounds like ${letterSound(letter)}',
-            textAlign: TextAlign.center, style: uiStyle(14, color: Colors.white70)),
+        Soft(Text('${letterName(letter)} · sounds like ${letterSound(letter)}',
+            textAlign: TextAlign.center, style: uiStyle(14))),
         if (!correct) ...[const SizedBox(height: 10), FormsRow(letter)],
       ]),
     );
@@ -101,8 +102,8 @@ class AlphabetPlan extends RoundPlan {
             ListenButton(onPressed: () => Speech.instance.letter(letter)),
           ]),
           Text(letterName(letter), textAlign: TextAlign.center, style: uiStyle(22, weight: FontWeight.w700)),
-          Text('sounds like: ${letterSound(letter)}',
-              textAlign: TextAlign.center, style: uiStyle(14, color: LearnColors.muted)),
+          Soft(Text('sounds like: ${letterSound(letter)}',
+              textAlign: TextAlign.center, style: uiStyle(14))),
           const SizedBox(height: 16),
           FormsRow(letter),
           const SizedBox(height: 20),
@@ -143,7 +144,7 @@ class AlphabetPlan extends RoundPlan {
         children: [
           const Eyebrow('Which letter is this?'),
           Text(letterName(letter), textAlign: TextAlign.center, style: uiStyle(28, weight: FontWeight.w700)),
-          Text(letterSound(letter), textAlign: TextAlign.center, style: uiStyle(15, color: LearnColors.muted)),
+          Soft(Text(letterSound(letter), textAlign: TextAlign.center, style: uiStyle(15))),
           const SizedBox(height: 18),
           Choices<String>(
             options: shuffled([letter, ..._rivals(letter)]),
@@ -202,7 +203,7 @@ class AlphabetPlan extends RoundPlan {
             onPick: (ok) => _conclude(c, letter, ok),
           ),
           const SizedBox(height: 6),
-          Text('“$meaning”', textAlign: TextAlign.center, style: uiStyle(14, color: LearnColors.muted)),
+          Soft(Text('“$meaning”', textAlign: TextAlign.center, style: uiStyle(14))),
         ]);
       };
 
@@ -262,7 +263,7 @@ class AlphabetPlan extends RoundPlan {
   }
 
   @override
-  List<Widget> summary(int right, int wrong) {
+  List<Widget> summary(BuildContext context, int right, int wrong) {
     final openNow = unlockedGroups(strengths);
     return [
       if (openNow > openAtStart)
@@ -282,6 +283,6 @@ class _Note extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(text,
             textAlign: TextAlign.center,
-            style: arabicStyle(16, color: highlight ? LearnColors.gold : LearnColors.muted)),
+            style: arabicStyle(16, color: highlight ? context.palette.gold : context.palette.muted)),
       );
 }

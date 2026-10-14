@@ -39,7 +39,8 @@ void main() {
         final text = (e.widget as Eyebrow).text;
         seenPrompts.add(text.startsWith('Tap the letter') ? 'Tap the letter' : text.split(' (').first);
       }
-      if (find.text('Another round').evaluate().isNotEmpty) {
+      if (find.textContaining(' right · ').evaluate().isNotEmpty) {
+        // The results screen; its buttons are under the list of missed items.
         await tapVisible(tester, find.widgetWithText(OutlinedButton, 'Done'));
         expect(find.byType(RoundScreen), findsNothing);
         return;
@@ -60,7 +61,7 @@ void main() {
       }
       await tapVisible(tester, find.byWidget(targets[random.nextInt(targets.length)].widget));
     }
-    fail('round did not finish');
+    fail('round did not finish; stuck on: ${find.byType(Text).evaluate().map((e) => (e.widget as Text).data).take(10).join(' | ')}');
   }
 
   Future<void> openLearn(WidgetTester tester, Map<String, Object> saved) async {

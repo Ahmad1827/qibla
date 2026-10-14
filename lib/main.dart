@@ -1,11 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'l10n/app_strings.dart';
 import 'learn/learn_screen.dart';
 import 'models/prayer_data.dart';
 import 'screens/quran_index_screen.dart';
 import 'services/location_service.dart';
+import 'theme/app_theme.dart';
 import 'widgets/prayer_list.dart';
 import 'widgets/qibla_compass.dart';
 
@@ -37,13 +38,8 @@ class _QiblaAppState extends State<QiblaApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0B0F19),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0B0F19),
-          elevation: 0,
-        ),
-      ),
+      theme: appTheme(Brightness.light),
+      darkTheme: appTheme(Brightness.dark),
       home: Directionality(
         textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
         child: HomeScreen(
@@ -102,133 +98,58 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final isArabic = widget.language == AppLanguage.arabic;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
       appBar: AppBar(
         title: Text(
           AppStrings.get('app_title', widget.language),
-          style: isArabic
-              ? GoogleFonts.amiri(fontWeight: FontWeight.bold, fontSize: 20)
-              : GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 17),
+          style: displayStyle(isArabic ? 22 : 21, color: p.green),
         ),
-        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, size: 20, color: Color(0xFF94A3B8)),
+            icon: const Icon(Icons.refresh_rounded, size: 20),
             onPressed: _loadData,
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        height: 62,
-        decoration: BoxDecoration(
-          color: const Color(0xFF131B2E).withOpacity(0.85),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: const Color(0xFF1E293B)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          height: 60,
+          decoration: panel(context, radius: 30),
+          // Shrinks to fit narrow phones (the Arabic labels are long).
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuranIndexScreen(
-                          language: widget.language,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.menu_book_rounded, size: 18, color: Color(0xFFE2B970)),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppStrings.get('quran', widget.language),
-                          style: GoogleFonts.plusJakartaSans(
-                            color: const Color(0xFFE2B970),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
+                _NavItem(
+                  icon: Icons.menu_book_rounded,
+                  label: AppStrings.get('quran', widget.language),
+                  color: p.green,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => QuranIndexScreen(language: widget.language)),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 24,
-                  color: const Color(0xFF1E293B),
-                ),
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LearnScreen()),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.school_rounded, size: 18, color: Color(0xFF2DD4BF)),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppStrings.get('learn', widget.language),
-                          style: GoogleFonts.plusJakartaSans(
-                            color: const Color(0xFF2DD4BF),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
+                _divider(p),
+                _NavItem(
+                  icon: Icons.school_rounded,
+                  label: AppStrings.get('learn', widget.language),
+                  color: p.gold,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LearnScreen()),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 24,
-                  color: const Color(0xFF1E293B),
-                ),
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
+                _divider(p),
+                _NavItem(
+                  icon: Icons.translate_rounded,
+                  label: isArabic ? 'English' : 'عربي',
+                  color: p.blue,
                   onTap: widget.onToggleLanguage,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.translate_rounded, size: 18, color: Color(0xFF38BDF8)),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.language == AppLanguage.arabic ? 'English' : 'عربي',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: const Color(0xFF38BDF8),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -239,14 +160,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _divider(Palette p) => Container(width: 1, height: 24, color: p.border);
+
   Widget _buildBody() {
+    final p = context.palette;
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Color(0xFFE2B970),
-        ),
-      );
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
 
     if (_error != null) {
@@ -256,23 +175,22 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.location_off_outlined, size: 48, color: Color(0xFFF43F5E)),
+              Icon(Icons.location_off_outlined, size: 48, color: p.wrong),
               const SizedBox(height: 12),
               Text(
                 AppStrings.get('error_location', widget.language),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 14),
+                style: GoogleFonts.plusJakartaSans(color: p.muted, fontSize: 14),
               ),
               const SizedBox(height: 16),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: const BorderParity(),
+              FilledButton(
+                style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: _loadData,
                 child: Text(
                   AppStrings.get('retry', widget.language),
-                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFFE2B970)),
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -282,13 +200,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 20.0),
+      padding: const EdgeInsets.only(top: 4.0, bottom: 20.0),
       children: [
+        _NextPrayerCard(schedule: _schedule!, language: widget.language),
+        const SizedBox(height: 16),
         QiblaCompass(
           schedule: _schedule!,
           language: widget.language,
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         PrayerList(
           schedule: _schedule!,
           language: widget.language,
@@ -298,6 +218,117 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class BorderParity extends BorderSide {
-  const BorderParity() : super(color: const Color(0xFFE2B970), width: 1);
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _NavItem({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+          child: Row(
+            children: [
+              Icon(icon, size: 19, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+/// The prayer coming up, its time and how long until it, on a green panel.
+class _NextPrayerCard extends StatelessWidget {
+  final PrayerSchedule schedule;
+  final AppLanguage language;
+  const _NextPrayerCard({required this.schedule, required this.language});
+
+  @override
+  Widget build(BuildContext context) {
+    // Deep green with cream lettering in light and dark mode alike.
+    const p = Palette.light;
+    final key = schedule.nextPrayerKey;
+    var time = schedule.list.firstWhere((prayer) => prayer.key == key).time;
+    final now = DateTime.now();
+    // After isha the next prayer is tomorrow's fajr; today's is close enough.
+    if (time.isBefore(now)) time = time.add(const Duration(days: 1));
+    final left = time.difference(now);
+    final hours = left.inHours;
+    final minutes = left.inMinutes % 60;
+    final countdown = [
+      AppStrings.get('in', language),
+      if (hours > 0) '$hours ${AppStrings.get('hours_short', language)}',
+      '$minutes ${AppStrings.get('minutes_short', language)}',
+    ].join(' ');
+    final isArabic = language == AppLanguage.arabic;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: p.green,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [BoxShadow(color: p.green.withValues(alpha: 0.18), blurRadius: 14, offset: const Offset(0, 4))],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(painter: PatternPainter(p.onGreen.withValues(alpha: 0.07))),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppStrings.get('next_prayer', language).toUpperCase(),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: p.onGreen.withValues(alpha: 0.75),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: isArabic ? 0 : 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppStrings.get(key, language),
+                          style: displayStyle(34, color: p.onGreen, height: 1.3),
+                        ),
+                        Text(
+                          countdown,
+                          style: GoogleFonts.plusJakartaSans(color: p.onGreen.withValues(alpha: 0.8), fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    DateFormat('hh:mm a').format(time),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: p.onGreen,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w300,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

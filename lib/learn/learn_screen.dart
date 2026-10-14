@@ -4,6 +4,7 @@ import 'course_round.dart';
 import 'lessons.dart';
 import 'letters.dart';
 import 'progress_store.dart';
+import '../theme/app_theme.dart';
 import 'round.dart';
 import 'speech.dart';
 
@@ -38,19 +39,16 @@ class _LearnScreenState extends State<LearnScreen> {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: LearnColors.background,
         appBar: AppBar(
-          backgroundColor: LearnColors.background,
-          elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white70),
+            icon: Icon(Icons.arrow_back_ios_new, size: 18, color: context.palette.muted),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text('Learn Arabic', style: uiStyle(18, weight: FontWeight.bold)),
+          title: Text('Learn Arabic', style: displayStyle(22, color: context.palette.green)),
         ),
         body: store == null
-            ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: LearnColors.gold))
+            ? Center(child: CircularProgressIndicator(strokeWidth: 2, color: context.palette.gold))
             : _body(store),
       ),
     );
@@ -68,14 +66,14 @@ class _LearnScreenState extends State<LearnScreen> {
         Row(children: [
           _Stat(
             icon: Icons.local_fire_department_rounded,
-            color: store.practisedToday() ? const Color(0xFFFB923C) : LearnColors.faint,
+            color: store.practisedToday() ? const Color(0xFFFB923C) : context.palette.faint,
             value: '$streak',
             label: streak == 1 ? 'day streak' : 'days streak',
           ),
           const SizedBox(width: 10),
           _Stat(
             icon: Icons.abc_rounded,
-            color: LearnColors.blue,
+            color: context.palette.blue,
             value: '$knownLetters/${trainerLetters.length}',
             label: 'letters known',
           ),
@@ -85,7 +83,7 @@ class _LearnScreenState extends State<LearnScreen> {
           Text(
             'No Arabic voice found on this phone, so listening questions about words are skipped. '
             'You can add one in the phone\'s text-to-speech settings (Google: install voice data → Arabic).',
-            style: uiStyle(12, color: LearnColors.faint, height: 1.4),
+            style: uiStyle(12, color: context.palette.faint, height: 1.4),
           ),
         ],
         const SizedBox(height: 22),
@@ -101,8 +99,8 @@ class _LearnScreenState extends State<LearnScreen> {
             const SizedBox(width: 10),
             IconButton.outlined(
               tooltip: 'All letters',
-              style: IconButton.styleFrom(side: const BorderSide(color: LearnColors.borderStrong)),
-              icon: const Icon(Icons.grid_view_rounded, color: Colors.white70),
+              style: IconButton.styleFrom(side: BorderSide(color: context.palette.borderStrong)),
+              icon: Icon(Icons.grid_view_rounded, color: context.palette.muted),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LettersScreen())),
             ),
           ]),
@@ -128,18 +126,14 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) => Expanded(
         child: Container(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: LearnColors.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: LearnColors.border),
-          ),
+          decoration: panel(context, radius: 16),
           child: Row(children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: uiStyle(18, weight: FontWeight.w700)),
-                Text(label, style: uiStyle(11.5, color: LearnColors.muted)),
+                Text(label, style: uiStyle(11.5, color: context.palette.muted)),
               ]),
             ),
           ]),
@@ -156,9 +150,9 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: uiStyle(19, weight: FontWeight.w700, color: LearnColors.gold)),
+          Text(title, style: displayStyle(24, color: context.palette.green, height: 1.2)),
           const SizedBox(height: 4),
-          Text(blurb, style: uiStyle(13, color: LearnColors.muted, height: 1.4)),
+          Text(blurb, style: uiStyle(13, color: context.palette.muted, height: 1.4)),
         ]),
       );
 }
@@ -170,11 +164,7 @@ class _Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: LearnColors.card,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: LearnColors.border),
-        ),
+        decoration: panel(context, radius: 18),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
       );
 }
@@ -190,10 +180,10 @@ class _GroupRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(children: [
-        Icon(locked ? Icons.lock_outline_rounded : Icons.circle, size: locked ? 14 : 8, color: LearnColors.faint),
+        Icon(locked ? Icons.lock_outline_rounded : Icons.circle, size: locked ? 14 : 8, color: context.palette.faint),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(group.title, style: uiStyle(13, color: locked ? LearnColors.faint : Colors.white70)),
+          child: Text(group.title, style: uiStyle(13, color: locked ? context.palette.faint : context.palette.muted)),
         ),
         Directionality(
           textDirection: TextDirection.rtl,
@@ -206,8 +196,8 @@ class _GroupRow extends StatelessWidget {
                   style: arabicStyle(20,
                       height: 1.3,
                       color: locked
-                          ? LearnColors.borderStrong
-                          : Color.lerp(LearnColors.faint, LearnColors.right, (strengths[l] ?? 0) / ProgressStore.maxStrength)!),
+                          ? context.palette.borderStrong
+                          : Color.lerp(context.palette.faint, context.palette.right, (strengths[l] ?? 0) / ProgressStore.maxStrength)!),
                 ),
               ),
           ]),
@@ -228,24 +218,24 @@ class _CoursePanel extends StatelessWidget {
     final strengths = store.course(course.id);
     final anyMet = course.units.any((u) => u.items.any((i) => strengths.containsKey(i.id)));
     return _Panel(children: [
-      for (final unit in course.units) _unitRow(unit, strengths),
+      for (final unit in course.units) _unitRow(context, unit, strengths),
       if (anyMet) ...[
         const SizedBox(height: 8),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: LearnColors.borderStrong),
+            side: BorderSide(color: context.palette.borderStrong),
             padding: const EdgeInsets.symmetric(vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: () => onPlay(() => CoursePlan(store, course, null)),
-          icon: const Icon(Icons.shuffle_rounded, size: 18, color: LearnColors.blue),
-          label: Text('Mixed review of everything met', style: uiStyle(14, color: LearnColors.blue)),
+          icon: Icon(Icons.shuffle_rounded, size: 18, color: context.palette.blue),
+          label: Text('Mixed review of everything met', style: uiStyle(14, color: context.palette.blue)),
         ),
       ],
     ]);
   }
 
-  Widget _unitRow(Unit unit, Map<String, int> strengths) {
+  Widget _unitRow(BuildContext context, Unit unit, Map<String, int> strengths) {
     final learned = unit.items.where((i) => (strengths[i.id] ?? 0) >= ProgressStore.knownAt).length;
     final started = unit.items.any((i) => strengths.containsKey(i.id));
     final done = learned == unit.items.length;
@@ -262,13 +252,13 @@ class _CoursePanel extends StatelessWidget {
               CircularProgressIndicator(
                 value: learned / unit.items.length,
                 strokeWidth: 3,
-                backgroundColor: LearnColors.border,
-                color: done ? LearnColors.right : LearnColors.gold,
+                backgroundColor: context.palette.border,
+                color: done ? context.palette.right : context.palette.green,
               ),
               Icon(
                 done ? Icons.check_rounded : (started ? Icons.play_arrow_rounded : Icons.play_arrow_outlined),
                 size: 16,
-                color: done ? LearnColors.right : Colors.white70,
+                color: done ? context.palette.right : context.palette.muted,
               ),
             ]),
           ),
@@ -278,11 +268,11 @@ class _CoursePanel extends StatelessWidget {
               Text(unit.title, style: uiStyle(15, weight: FontWeight.w600)),
               Text(
                 unit.blurb.isNotEmpty ? unit.blurb : '$learned of ${unit.items.length} learned',
-                style: uiStyle(12, color: LearnColors.faint),
+                style: uiStyle(12, color: context.palette.faint),
               ),
             ]),
           ),
-          const Icon(Icons.chevron_right_rounded, color: LearnColors.faint),
+          Icon(Icons.chevron_right_rounded, color: context.palette.faint),
         ]),
       ),
     );
@@ -298,16 +288,13 @@ class LettersScreen extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: LearnColors.background,
         appBar: AppBar(
-          backgroundColor: LearnColors.background,
-          elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white70),
+            icon: Icon(Icons.arrow_back_ios_new, size: 18, color: context.palette.muted),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text('The alphabet', style: uiStyle(18, weight: FontWeight.bold)),
+          title: Text('The alphabet', style: displayStyle(22, color: context.palette.green)),
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
@@ -315,11 +302,7 @@ class LettersScreen extends StatelessWidget {
             for (final letter in trainerLetters)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: LearnColors.card,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: LearnColors.border),
-                ),
+                decoration: panel(context, radius: 14),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
                   onTap: () => Speech.instance.letter(letter),
@@ -331,7 +314,7 @@ class LettersScreen extends StatelessWidget {
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(letterName(letter), style: uiStyle(15, weight: FontWeight.w700)),
-                          Text(letterSound(letter), style: uiStyle(12, color: LearnColors.muted)),
+                          Text(letterSound(letter), style: uiStyle(12, color: context.palette.muted)),
                         ]),
                       ),
                       Directionality(
@@ -340,7 +323,7 @@ class LettersScreen extends StatelessWidget {
                           for (final form in letterForms(letter).skip(1))
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Text(form.text, style: arabicStyle(22, color: LearnColors.gold)),
+                              child: Text(form.text, style: arabicStyle(22, color: context.palette.gold)),
                             ),
                         ]),
                       ),

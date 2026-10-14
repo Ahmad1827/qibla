@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../l10n/app_strings.dart';
 import '../models/quran_model.dart';
 import '../services/quran_service.dart';
+import '../theme/app_theme.dart';
 import 'surah_detail_screen.dart';
 
 class QuranIndexScreen extends StatefulWidget {
@@ -30,6 +31,12 @@ class _QuranIndexScreenState extends State<QuranIndexScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   void _filterSurahs(String query) {
     setState(() {
       _filteredSurahs = _allSurahs.where((s) {
@@ -43,42 +50,30 @@ class _QuranIndexScreenState extends State<QuranIndexScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B0F19),
-        elevation: 0,
-        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           AppStrings.get('quran', widget.language),
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.white,
-          ),
+          style: displayStyle(22, color: p.green),
         ),
       ),
       body: FutureBuilder<List<SurahHeader>>(
         future: _surahListFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFFE2B970),
-              ),
-            );
+            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
           }
 
           if (snapshot.hasError) {
             return Center(
               child: Text(
                 AppStrings.get('error_quran', widget.language),
-                style: GoogleFonts.plusJakartaSans(color: Colors.white60),
+                style: GoogleFonts.plusJakartaSans(color: p.muted),
               ),
             );
           }
@@ -86,21 +81,22 @@ class _QuranIndexScreenState extends State<QuranIndexScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF131B2E),
+                    color: p.sunk,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF1E293B)),
+                    border: Border.all(color: p.border),
                   ),
                   child: TextField(
                     controller: _searchController,
                     onChanged: _filterSurahs,
-                    style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14),
+                    cursorColor: p.green,
+                    style: GoogleFonts.plusJakartaSans(color: p.ink, fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: 'Search Surah...',
-                      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF475569), fontSize: 14),
-                      prefixIcon: const Icon(Icons.search, size: 18, color: Color(0xFF475569)),
+                      hintText: AppStrings.get('search_surah', widget.language),
+                      hintStyle: GoogleFonts.plusJakartaSans(color: p.faint, fontSize: 14),
+                      prefixIcon: Icon(Icons.search, size: 19, color: p.faint),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
@@ -109,96 +105,93 @@ class _QuranIndexScreenState extends State<QuranIndexScreen> {
               ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   itemCount: _filteredSurahs.length,
-                  itemBuilder: (context, index) {
-                    final surah = _filteredSurahs[index];
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10.0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131B2E),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF1E293B)),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SurahDetailScreen(
-                                surah: surah,
-                                language: widget.language,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0B0F19),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF334155)),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '${surah.number}',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xFFE2B970),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      surah.englishName,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${surah.englishNameTranslation} • ${surah.numberOfAyahs} ayahs',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: const Color(0xFF64748B),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                surah.nameArabic,
-                                style: GoogleFonts.amiri(
-                                  color: const Color(0xFFE2B970),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                  itemBuilder: (context, index) => _surahRow(_filteredSurahs[index]),
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _surahRow(SurahHeader surah) {
+    final p = context.palette;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10.0),
+      decoration: panel(context, radius: 18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SurahDetailScreen(
+                surah: surah,
+                language: widget.language,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+          child: Row(
+            children: [
+              StarNumber(surah.number, size: 44),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      surah.englishName,
+                      style: GoogleFonts.plusJakartaSans(color: p.ink, fontWeight: FontWeight.w700, fontSize: 15),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${surah.englishNameTranslation} · ${surah.numberOfAyahs} ${AppStrings.get('ayahs', widget.language)}',
+                      style: GoogleFonts.plusJakartaSans(color: p.muted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                surah.nameArabic,
+                style: GoogleFonts.amiri(color: p.green, fontWeight: FontWeight.bold, fontSize: 21),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A number inside an eight-pointed star, the way a mushaf marks surahs and verses.
+class StarNumber extends StatelessWidget {
+  final int number;
+  final double size;
+  const StarNumber(this.number, {super.key, this.size = 40});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(
+        painter: StarPainter(p.gold, outline: true),
+        child: Center(
+          child: Text(
+            '$number',
+            style: GoogleFonts.plusJakartaSans(
+              color: p.ink,
+              fontWeight: FontWeight.w700,
+              fontSize: number > 99 ? size * 0.25 : size * 0.3,
+            ),
+          ),
+        ),
       ),
     );
   }
