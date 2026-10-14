@@ -1,4 +1,4 @@
-package com.example.qibla
+package com.atod.qibla
 
 import io.flutter.embedding.android.FlutterActivity
 
